@@ -1,63 +1,6 @@
-from enum import Enum
-
-
-class ResistorsTypes(Enum):
-    MLT = 1
-    OMLT = 2
-    C2_10 = 3
-    C2_14 = 4
-    C2_29B = 5
-    C2_33H = 6
-
-
-class Resistor:
-    def __init__(self, type: str, nominal: int, capacity: float, accuracy_in_percentage: float):
-        self.type = type
-        self.nominal = nominal
-        self.capacity = capacity
-        self.accuracy_in_percentage = accuracy_in_percentage
-
-    def __str__(self):
-        resistor_info = f'Resistor: type = {self.type},' \
-                        f' nominal = {self.nominal}(Om), ' \
-                        f'capacity = {self.capacity}(Bt),' \
-                        f' accuracy = {self.accuracy_in_percentage} %'
-        return resistor_info
-
-
-class TreeNode:
-
-    def __init__(self, resistor: Resistor):
-        self.left = None
-        self.right = None
-        self.parent = None
-        self.resistor = resistor
-
-    def find_node(self, type_to_delete: float):
-        if self.resistor.accuracy_in_percentage == type_to_delete:
-            return self
-        left_result = None
-        right_result = None
-        if self.left is not None:
-            left_result = self.left.find_node(type_to_delete)
-        if self.right:
-            right_result = self.right.find_node(type_to_delete)
-        return left_result if left_result else right_result
-
-    def find_and_print_node(self, nominal: int):
-        if self.left:
-            self.left.find_and_print_node(nominal)
-        if self.right:
-            self.right.find_and_print_node(nominal)
-        if self.resistor.nominal == nominal:
-            print(self.resistor)
-
-    def print_nodes(self):
-        if self.left:
-            self.left.print_nodes()
-        if self.right:
-            self.right.print_nodes()
-        print(self.resistor)
+from models.Resistor import Resistor
+from models.ResistorsTypes import ResistorsTypes
+from models.TreeNode import TreeNode
 
 
 class BinarySearchTree:
@@ -111,10 +54,7 @@ class BinarySearchTree:
 
     def find(self, type_to_delete: float):
         if self.root:
-            if self.root.resistor.accuracy_in_percentage == type_to_delete:
-                return self.root
-            else:
-                return self.root.find_node(type_to_delete)
+            return self.root.find_node_to_delete(type_to_delete)
         else:
             return None
 
@@ -146,21 +86,21 @@ class BinarySearchTree:
         while node_to_delete:
             if node_to_delete == node_to_delete.parent.left:
                 if node_to_delete.right:
-                    node_to_delete.parent.left = node_to_delete.right
+                    node_to_delete.parent.left = node_to_delete.right  # те місце куди силається наш об єкт для видалення замінити посиланням на обєкт зправа
                     node_to_delete.right.parent = node_to_delete.parent
                     current_node = node_to_delete.right
                     while current_node.left:
                         current_node = current_node.left
-                    current_node.left = node_to_delete.left
-                    node_to_delete.left.parent = current_node
+                        node_to_delete.left.parent = current_node
+                    current_node.left = node_to_delete.left  # найлівіше зправа від видаленої ноди вказуватиме на ліву частину видаленої ноди
                 elif node_to_delete.left:
-                    node_to_delete.parent.left = node_to_delete.left
+                    node_to_delete.parent.left = node_to_delete.left  # зміна місце ноди на його дитину зліва
                     node_to_delete.left.parent = node_to_delete.parent
                 else:
                     node_to_delete.parent.left = None
             else:
-                node_to_delete.parent.right = node_to_delete.right
                 if node_to_delete.right:
+                    node_to_delete.parent.right = node_to_delete.right
                     node_to_delete.right.parent = node_to_delete.parent
                     current_node = node_to_delete.right
                     while current_node.left:
@@ -174,17 +114,14 @@ class BinarySearchTree:
                     node_to_delete.parent.right = None
             node_to_delete = self.find(type_to_delete)
 
-    def find_and_print_node(self, nominal: int):
-        if self.root.left:
-            self.root.left.find_and_print_node(nominal)
-        if self.root.right:
-            self.root.right.find_and_print_node(nominal)
-        if self.root.resistor.nominal == nominal:
-            print(self.root.resistor)
+    def find_and_print_node_with_nominal(self, nominal: int):
+        if self.root:
+            self.root.find_and_print_node(nominal)
+        else:
+            return None
 
     def print_binary_search_tree(self):
-        if self.root.left:
-            self.root.left.print_nodes()
-        print(self.root.resistor)
-        if self.root.right:
-            self.root.right.print_nodes()
+        if self.root:
+            self.root.print_nodes()
+        else:
+            return None
